@@ -1,0 +1,6 @@
+simulate
+dumpsim
+*.o
+*.obj
+assembler.linux
+.DS_Store
