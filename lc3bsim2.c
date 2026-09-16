@@ -408,6 +408,41 @@ int read_word(int addr)
   return (high << 8) | low;
 }
 
+/* Sign extends to 16 bits */
+int sext(int value, int bits)
+{
+  int sign_bit = (value >> (bits - 1)) & 1;
+  if(sign_bit == 1)
+  {
+    int field_mask = (1 << bits) - 1;
+    value = value | (~field_mask);
+  }
+
+  return Low16bits(value);
+}
+
+/* Sets N/Z/P in NEXT_LATCHES based on a 16-bit result. */
+void setcc(int value)
+{
+  if (((value >> 15) & 1) == 1)
+  { 
+    NEXT_LATCHES.N = 1;
+    NEXT_LATCHES.Z = 0;
+    NEXT_LATCHES.P = 0;
+  }
+  else if (value == 0)
+  {
+    NEXT_LATCHES.N = 0;
+    NEXT_LATCHES.Z = 1;
+    NEXT_LATCHES.P = 0;
+  }
+  else
+  {
+    NEXT_LATCHES.N = 0;
+    NEXT_LATCHES.Z = 0;
+    NEXT_LATCHES.P = 1;
+  }
+}
 
 void process_instruction()
 {
@@ -418,17 +453,13 @@ void process_instruction()
    *       -Decode 
    *       -Execute
    *       -Update NEXT_LATCHES
-   */    
+   */
 
-   /* Fetch Phase */
+  /* Fetch Phase */
   int instr = read_word(CURRENT_LATCHES.PC);
   int pc_inc = Low16bits(CURRENT_LATCHES.PC + 2);
   NEXT_LATCHES.PC = pc_inc;
 
   /* Decode Phase */
   int opcode = (instr >> 12) & 0xF;
-
-
-  /* Debug Statement */
-  printf("DEBUG instr=0x%.4X opcode=%d\n", instr, opcode);
 }
