@@ -1,12 +1,6 @@
 /*
-    Remove all unnecessary lines (including this one) 
-    in this comment.
-    REFER TO THE SUBMISSION INSTRUCTION FOR DETAILS
-
-    Name 1: Full name of the first partner 
-    Name 2: Full name of the second partner
-    UTEID 1: UT EID of the first partner
-    UTEID 2: UT EID of the second partner
+    Name 1: Anmol Dubey 
+    UTEID 1: ad56328
 */
 
 /***************************************************************/
@@ -405,9 +399,18 @@ int main(int argc, char *argv[]) {
 
 /***************************************************************/
 
+/* Returns the 16-bit word stored at (even) byte address addr */
+int read_word(int addr)
+{
+  int row = addr >> 1;
+  int low = MEMORY[row][0];
+  int high = MEMORY[row][1];
+  return (high << 8) | low;
+}
 
 
-void process_instruction(){
+void process_instruction()
+{
   /*  function: process_instruction
    *  
    *    Process one instruction at a time  
@@ -415,6 +418,17 @@ void process_instruction(){
    *       -Decode 
    *       -Execute
    *       -Update NEXT_LATCHES
-   */     
+   */    
 
+   /* Fetch Phase */
+  int instr = read_word(CURRENT_LATCHES.PC);
+  int pc_inc = Low16bits(CURRENT_LATCHES.PC + 2);
+  NEXT_LATCHES.PC = pc_inc;
+
+  /* Decode Phase */
+  int opcode = (instr >> 12) & 0xF;
+
+
+  /* Debug Statement */
+  printf("DEBUG instr=0x%.4X opcode=%d\n", instr, opcode);
 }
