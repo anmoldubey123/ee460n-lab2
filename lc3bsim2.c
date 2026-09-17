@@ -460,6 +460,48 @@ void process_instruction()
   int pc_inc = Low16bits(CURRENT_LATCHES.PC + 2);
   NEXT_LATCHES.PC = pc_inc;
 
-  /* Decode Phase */
+  /* ---------- DECODE ---------- */
   int opcode = (instr >> 12) & 0xF;
+  int dr = (instr >> 9) & 0x7;  /* bits [11:9] */
+  int sr1 = (instr >> 6) & 0x7; /* bits [8:6]  */
+
+  /* EXECUTE */
+  switch (opcode)
+  {
+
+  case 1: /* ADD */
+  case 5: /* AND */
+  case 9:
+  {                                   /* XOR, NOT */
+    int mode = (instr >> 5) & 0x1; /* bit [5] */
+    int op1 = CURRENT_LATCHES.REGS[sr1];
+    int op2;
+
+    if (mode == 0)
+    {
+      int sr2 = instr & 0x7; /* bits [2:0] */
+      op2 = CURRENT_LATCHES.REGS[sr2];
+    }
+    else
+    {
+      op2 = sext(instr & 0x1f, 5); /* imm5 */
+    }
+
+    int result;
+    if (opcode == 1)
+      result = op1 + op2; /* ADD */
+    else if (opcode == 5)
+      result = op1 & op2; /* AND */
+    else
+      result = op1 ^ op2; /* XOR */
+
+    result = Low16bits(result);
+    NEXT_LATCHES.REGS[dr] = result;
+    setcc(result);
+    break;
+  }
+
+  default:
+    break;
+  }
 }
