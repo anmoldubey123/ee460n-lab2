@@ -501,6 +501,34 @@ void process_instruction()
     break;
   }
 
+  case 13:
+  {                                   /* SHF */
+    int amount4 = instr & 0xF;       /* bits [3:0], unsigned */
+    int dir = (instr >> 4) & 0x1;   /* bit [4] */
+    int arith = (instr >> 5) & 0x1; /* bit [5] */
+    int src = CURRENT_LATCHES.REGS[sr1];
+    int result;
+
+    if (dir == 0)
+    { /* left shift */
+      result = src << amount4;
+    }
+    else
+    {
+      result = src >> amount4; /* logical right shift */
+      if (arith == 1 && ((src >> 15) & 1) == 1)
+      {
+        /* fill the vacated top amount4 bits with 1s */
+        result = result | (((1 << amount4) - 1) << (16 - amount4));
+      }
+    }
+
+    result = Low16bits(result);
+    NEXT_LATCHES.REGS[dr] = result;
+    setcc(result);
+    break;
+  }
+
   default:
     break;
   }
