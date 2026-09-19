@@ -628,6 +628,16 @@ void process_instruction()
     break;
   }
 
+  case 15:
+  { /* TRAP */
+    int trapvect8 = instr & 0xFF;
+    int addr = trapvect8 << 1;
+
+    NEXT_LATCHES.REGS[7] = pc_inc;
+    NEXT_LATCHES.PC = Low16bits(read_word(addr));
+    break;
+  }
+
   default:
     break;
   }
