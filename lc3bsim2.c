@@ -602,6 +602,32 @@ void process_instruction()
     break;
   }
 
+  case 12:
+  { /* JMP, RET */
+    NEXT_LATCHES.PC = Low16bits(CURRENT_LATCHES.REGS[sr1]);
+    break;
+  }
+
+  case 4:
+  {                                  /* JSR, JSRR */
+    int mode = (instr >> 11) & 0x1; /* bit [11] */
+    int target;
+
+    if (mode == 0)
+    { /* JSRR */
+      target = CURRENT_LATCHES.REGS[sr1];
+    }
+    else
+    { /* JSR */
+      int pcoffset11 = sext(instr & 0x07FF, 11);
+      target = pc_inc + (pcoffset11 << 1);
+    }
+
+    NEXT_LATCHES.REGS[7] = pc_inc; /* the return address */
+    NEXT_LATCHES.PC = Low16bits(target);
+    break;
+  }
+
   default:
     break;
   }
