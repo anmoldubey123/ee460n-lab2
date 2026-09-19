@@ -557,6 +557,27 @@ void process_instruction()
     break;
   }
 
+  case 2:
+  { /* LDB */
+    int boffset6 = sext(instr & 0x3F, 6);
+    int addr = Low16bits(CURRENT_LATCHES.REGS[sr1] + boffset6); /* note: no shift */
+    int byte = MEMORY[addr >> 1][addr & 1];                   /* row, then column */
+    int value = sext(byte, 8);
+
+    NEXT_LATCHES.REGS[dr] = Low16bits(value);
+    setcc(value);
+    break;
+  }
+
+  case 3:
+  { /* STB */
+    int boffset6 = sext(instr & 0x3F, 6);
+    int addr = Low16bits(CURRENT_LATCHES.REGS[sr1] + boffset6);
+
+    MEMORY[addr >> 1][addr & 1] = CURRENT_LATCHES.REGS[dr] & 0xFF;
+    break;
+  }
+
   default:
     break;
   }
