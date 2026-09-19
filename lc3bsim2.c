@@ -408,6 +408,14 @@ int read_word(int addr)
   return (high << 8) | low;
 }
 
+/* Stores a 16-bit word at (even) byte address addr */
+void write_word(int addr, int value)
+{
+  int row = addr >> 1;
+  MEMORY[row][0] = value & 0xFF; /* low byte:  bits [7:0] of value */
+  MEMORY[row][1] = (value >> 8) & 0xFF; /* high byte: bits [15:8] of value */
+}
+
 /* Sign extends to 16 bits */
 int sext(int value, int bits)
 {
@@ -526,6 +534,26 @@ void process_instruction()
     result = Low16bits(result);
     NEXT_LATCHES.REGS[dr] = result;
     setcc(result);
+    break;
+  }
+
+  case 6:
+  { /* LDW */
+    int offset6 = sext(instr & 0x3F, 6);
+    int addr = Low16bits(CURRENT_LATCHES.REGS[sr1] + (offset6 << 1));
+    int value = read_word(addr);
+
+    NEXT_LATCHES.REGS[dr] = Low16bits(value);
+    setcc(value);
+    break;
+  }
+
+  case 7:
+  { /* STW */
+    int offset6 = sext(instr & 0x3F, 6);
+    int addr = Low16bits(CURRENT_LATCHES.REGS[sr1] + (offset6 << 1));
+
+    write_word(addr, CURRENT_LATCHES.REGS[dr]);
     break;
   }
 
