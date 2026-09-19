@@ -578,6 +578,30 @@ void process_instruction()
     break;
   }
 
+  case 14:
+  { /* LEA */
+    int pcoffset9 = sext(instr & 0x01FF, 9);
+    int addr = Low16bits(pc_inc + (pcoffset9 << 1));
+
+    NEXT_LATCHES.REGS[dr] = addr;
+    /* no setcc here */
+    break;
+  }
+
+  case 0:
+  { /* BR */
+    int n = (instr >> 11) & 0x1;
+    int z = (instr >> 10) & 0x1;
+    int p = (instr >> 9) & 0x1;
+
+    if ((n && CURRENT_LATCHES.N) || (z && CURRENT_LATCHES.Z) || (p && CURRENT_LATCHES.P))
+    {
+      int pcoffset9 = sext(instr & 0x01FF, 9);
+      NEXT_LATCHES.PC = Low16bits(pc_inc + (pcoffset9 << 1));
+    }
+    break;
+  }
+
   default:
     break;
   }
